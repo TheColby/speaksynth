@@ -3,7 +3,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { engine } from '@/audio/SynthEngine';
 
 const KEYS = [
@@ -22,138 +22,91 @@ const KEYS = [
     { note: 'C4', key: 'k', isBlack: false },
 ];
 
-export default function Keyboard({ hasPatch }: { hasPatch: boolean }) {
-    const [activeNotes, setActiveNotes] = useState<Set<string>>(new Set());
+interface KeyboardProps {
+    hasPatch: boolean;
+    engineReady: boolean;
+}
 
+export default function Keyboard({ hasPatch, engineReady }: KeyboardProps) {
+    const [activeNotes, setActiveNotes] = useState<Set<string>>(new Set());
+    // Use a ref so keyboard event handlers never go stale
+    const activeNotesRef = useRef<Set<string>>(new Set());
+
+    const noteOn = (note: string) => {
+        if (!hasPatch || !engineReady) return;
+        if (activeNotesRef.current.has(note)) return;
+        activeNotesRef.current = new Set(activeNotesRef.current).add(note);
+        setActiveNotes(new Set(activeNotesRef.current));
+        engine.noteOn(note);
+    };
+
+    const noteOff = (note: string) => {
+        if (!hasPatch || !engineReady) return;
+        const next = new Set(activeNotesRef.current);
+        next.delete(note);
+        activeNotesRef.current = next;
+        setActiveNotes(new Set(next));
+        engine.noteOff(note);
+    };
+
+    // Register keyboard shortcuts — only re-registers when hasPatch or engineReady changes,
+    // NOT on every activeNotes change (we use the ref instead).
     useEffect(() => {
-        if (!hasPatch) return;
+        if (!hasPatch || !engineReady) return;
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.repeat) return;
-            const keyMap = KEYS.find(k => k.key === e.key);
-            if (keyMap && !activeNotes.has(keyMap.note)) {
-                engine.noteOn(keyMap.note);
-                setActiveNotes(prev => new Set(prev).add(keyMap.note));
-            }
+            if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+            const k = KEYS.find(k => k.key === e.key);
+            if (k) noteOn(k.note);
         };
-
         const handleKeyUp = (e: KeyboardEvent) => {
-            const keyMap = KEYS.find(k => k.key === e.key);
-            if (keyMap) {
-                engine.noteOff(keyMap.note);
-                setActiveNotes(prev => {
-                    const next = new Set(prev);
-                    next.delete(keyMap.note);
-                    return next;
-                });
-            }
+            const k = KEYS.find(k => k.key === e.key);
+            if (k) noteOff(k.note);
         };
 
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
-
-        // MIDI Support
-        let midiAccess: WebMidi.MIDIAccess | null = null;
-        let midiInputs: WebMidi.MIDIInput[] = [];
-
-        const onMidiMessage = (message: WebMidi.MIDIMessageEvent) => {
-            const data = message.data;
-            if (!data) return;
-            const cmd = data[0] >> 4;
-            const noteNum = data[1];
-            const velocity = data.length > 2 ? data[2] : 0;
-
-            // Calculate octave (MIDI note 60 is C4)
-            const octave = Math.floor(noteNum / 12) - 1;
-            const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-            const noteName = noteNames[noteNum % 12];
-            const noteStr = `${noteName}${octave}`;
-
-            if (cmd === 9 && velocity > 0) {
-                // Note On
-                if (!activeNotes.has(noteStr)) {
-                    engine.noteOn(noteStr);
-                    setActiveNotes(prev => new Set(prev).add(noteStr));
-                }
-            } else if (cmd === 8 || (cmd === 9 && velocity === 0)) {
-                // Note Off
-                engine.noteOff(noteStr);
-                setActiveNotes(prev => {
-                    const next = new Set(prev);
-                    next.delete(noteStr);
-                    return next;
-                });
-            }
-        };
-
-        if (navigator.requestMIDIAccess) {
-            navigator.requestMIDIAccess().then(access => {
-                midiAccess = access;
-                for (const input of access.inputs.values()) {
-                    input.onmidimessage = onMidiMessage;
-                    midiInputs.push(input);
-                }
-
-                access.onstatechange = (e) => {
-                    const port = e.port;
-                    if (port.type === 'input') {
-                        const input = port as WebMidi.MIDIInput;
-                        if (port.state === 'connected') {
-                            input.onmidimessage = onMidiMessage;
-                        }
-                    }
-                };
-            }).catch(err => console.error("MIDI access denied", err));
-        }
-
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
-            if (midiAccess) {
-                for (const input of midiInputs) {
-                    input.onmidimessage = null;
-                }
-            }
         };
-    }, [hasPatch, activeNotes]);
+    }, [hasPatch, engineReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const handlePointerDown = (note: string) => {
-        if (!hasPatch) return;
-        engine.noteOn(note);
-        setActiveNotes(prev => new Set(prev).add(note));
-    };
-
-    const handlePointerUp = (note: string) => {
-        if (!hasPatch) return;
-        engine.noteOff(note);
-        setActiveNotes(prev => {
-            const next = new Set(prev);
-            next.delete(note);
-            return next;
-        });
-    };
+    const isDisabled = !hasPatch || !engineReady;
 
     return (
-        <div className="w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl flex justify-center overflow-x-auto">
-            <div className={`relative flex h-32 ${!hasPatch ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+        <div className="w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl flex flex-col items-center gap-3">
+            {isDisabled && (
+                <p className="text-xs text-zinc-500">
+                    {!engineReady ? 'Click anywhere to enable audio, then generate a patch to play' : 'Generate a patch to enable the keyboard'}
+                </p>
+            )}
+            <div className="relative flex h-32 overflow-visible">
                 {KEYS.map(({ note, isBlack, key }) => (
                     <div
                         key={note}
-                        onPointerDown={() => handlePointerDown(note)}
-                        onPointerUp={() => handlePointerUp(note)}
-                        onPointerLeave={() => {
-                            if (activeNotes.has(note)) handlePointerUp(note);
+                        onPointerDown={(e) => {
+                            e.currentTarget.setPointerCapture(e.pointerId);
+                            noteOn(note);
                         }}
-                        className={`
-              relative flex items-end justify-center pb-2 select-none cursor-pointer transition-colors
-              ${isBlack
-                                ? 'w-8 h-20 -mx-4 z-10 bg-zinc-800 border-x border-b border-zinc-950 rounded-b-md shadow-md'
-                                : 'w-12 h-32 bg-zinc-100 border-x border-b border-zinc-300 rounded-b-md'
-                            }
-              ${activeNotes.has(note) ? (isBlack ? 'bg-emerald-800' : 'bg-emerald-200') : ''}
-            `}
+                        onPointerUp={(e) => {
+                            e.currentTarget.releasePointerCapture(e.pointerId);
+                            noteOff(note);
+                        }}
+                        onPointerCancel={() => noteOff(note)}
+                        className={[
+                            'relative flex items-end justify-center pb-1 select-none transition-colors duration-75',
+                            isBlack
+                                ? 'w-8 h-20 -mx-4 z-10 rounded-b-md shadow-lg border-x border-b border-zinc-950'
+                                : 'w-12 h-32 rounded-b-md border-x border-b border-zinc-300',
+                            isDisabled
+                                ? isBlack ? 'bg-zinc-800 cursor-not-allowed opacity-50' : 'bg-zinc-200 cursor-not-allowed opacity-50'
+                                : isBlack
+                                    ? activeNotes.has(note) ? 'bg-emerald-700 cursor-pointer' : 'bg-zinc-800 cursor-pointer hover:bg-zinc-700'
+                                    : activeNotes.has(note) ? 'bg-emerald-200 cursor-pointer' : 'bg-zinc-100 cursor-pointer hover:bg-zinc-50',
+                        ].join(' ')}
                     >
-                        <span className={`text-[10px] font-mono ${isBlack ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                        <span className={`text-[9px] font-mono ${isBlack ? 'text-zinc-400' : 'text-zinc-500'}`}>
                             {key.toUpperCase()}
                         </span>
                     </div>
