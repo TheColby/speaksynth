@@ -6,20 +6,27 @@
 import { useEffect, useRef, useState } from 'react';
 import { engine } from '@/audio/SynthEngine';
 
+function buildOctaveKeys(octave: number, keyMap: Record<string, string>) {
+    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    return notes.map(n => ({
+        note: `${n}${octave}`,
+        key: keyMap[`${n}${octave}`] ?? '',
+        isBlack: n.includes('#'),
+    }));
+}
+
+// Keyboard shortcuts only on the middle octave (C3)
+const SHORTCUT_MAP: Record<string, string> = {
+    C3: 'a', 'C#3': 'w', D3: 's', 'D#3': 'e', E3: 'd',
+    F3: 'f', 'F#3': 't', G3: 'g', 'G#3': 'y',
+    A3: 'h', 'A#3': 'u', B3: 'j', C4: 'k',
+};
+
 const KEYS = [
-    { note: 'C3', key: 'a', isBlack: false },
-    { note: 'C#3', key: 'w', isBlack: true },
-    { note: 'D3', key: 's', isBlack: false },
-    { note: 'D#3', key: 'e', isBlack: true },
-    { note: 'E3', key: 'd', isBlack: false },
-    { note: 'F3', key: 'f', isBlack: false },
-    { note: 'F#3', key: 't', isBlack: true },
-    { note: 'G3', key: 'g', isBlack: false },
-    { note: 'G#3', key: 'y', isBlack: true },
-    { note: 'A3', key: 'h', isBlack: false },
-    { note: 'A#3', key: 'u', isBlack: true },
-    { note: 'B3', key: 'j', isBlack: false },
-    { note: 'C4', key: 'k', isBlack: false },
+    ...buildOctaveKeys(2, SHORTCUT_MAP),
+    ...buildOctaveKeys(3, SHORTCUT_MAP),
+    ...buildOctaveKeys(4, SHORTCUT_MAP),
+    { note: 'C5', key: '', isBlack: false },
 ];
 
 interface KeyboardProps {
@@ -81,36 +88,38 @@ export default function Keyboard({ hasPatch, engineReady }: KeyboardProps) {
                     {!engineReady ? 'Click anywhere to enable audio, then generate a patch to play' : 'Generate a patch to enable the keyboard'}
                 </p>
             )}
-            <div className="relative flex h-32 overflow-visible">
-                {KEYS.map(({ note, isBlack, key }) => (
-                    <div
-                        key={note}
-                        onPointerDown={(e) => {
-                            e.currentTarget.setPointerCapture(e.pointerId);
-                            noteOn(note);
-                        }}
-                        onPointerUp={(e) => {
-                            e.currentTarget.releasePointerCapture(e.pointerId);
-                            noteOff(note);
-                        }}
-                        onPointerCancel={() => noteOff(note)}
-                        className={[
-                            'relative flex items-end justify-center pb-1 select-none transition-colors duration-75',
-                            isBlack
-                                ? 'w-8 h-20 -mx-4 z-10 rounded-b-md shadow-lg border-x border-b border-zinc-950'
-                                : 'w-12 h-32 rounded-b-md border-x border-b border-zinc-300',
-                            isDisabled
-                                ? isBlack ? 'bg-zinc-800 cursor-not-allowed opacity-50' : 'bg-zinc-200 cursor-not-allowed opacity-50'
-                                : isBlack
-                                    ? activeNotes.has(note) ? 'bg-emerald-700 cursor-pointer' : 'bg-zinc-800 cursor-pointer hover:bg-zinc-700'
-                                    : activeNotes.has(note) ? 'bg-emerald-200 cursor-pointer' : 'bg-zinc-100 cursor-pointer hover:bg-zinc-50',
-                        ].join(' ')}
-                    >
-                        <span className={`text-[9px] font-mono ${isBlack ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                            {key.toUpperCase()}
-                        </span>
-                    </div>
-                ))}
+            <div className="w-full overflow-x-auto pb-2">
+                <div className="relative flex h-32" style={{ minWidth: 'max-content' }}>
+                    {KEYS.map(({ note, isBlack, key }) => (
+                        <div
+                            key={note}
+                            onPointerDown={(e) => {
+                                e.currentTarget.setPointerCapture(e.pointerId);
+                                noteOn(note);
+                            }}
+                            onPointerUp={(e) => {
+                                e.currentTarget.releasePointerCapture(e.pointerId);
+                                noteOff(note);
+                            }}
+                            onPointerCancel={() => noteOff(note)}
+                            className={[
+                                'relative flex items-end justify-center pb-1 select-none transition-colors duration-75',
+                                isBlack
+                                    ? 'w-8 h-20 -mx-4 z-10 rounded-b-md shadow-lg border-x border-b border-zinc-950'
+                                    : 'w-12 h-32 rounded-b-md border-x border-b border-zinc-300',
+                                isDisabled
+                                    ? isBlack ? 'bg-zinc-800 cursor-not-allowed opacity-50' : 'bg-zinc-200 cursor-not-allowed opacity-50'
+                                    : isBlack
+                                        ? activeNotes.has(note) ? 'bg-emerald-700 cursor-pointer' : 'bg-zinc-800 cursor-pointer hover:bg-zinc-700'
+                                        : activeNotes.has(note) ? 'bg-emerald-200 cursor-pointer' : 'bg-zinc-100 cursor-pointer hover:bg-zinc-50',
+                            ].join(' ')}
+                        >
+                            <span className={`text-[9px] font-mono ${isBlack ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                {key.toUpperCase()}
+                            </span>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
