@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Colby Leider and contributors. All rights reserved.
+// Licensed under the MIT License. See LICENSE for details.
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";

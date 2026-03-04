@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Colby Leider and contributors. All rights reserved.
+// Licensed under the MIT License. See LICENSE for details.
+
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { zodToJsonSchema } from 'zod-to-json-schema';
@@ -7,7 +10,7 @@ const openai = process.env.OPENAI_API_KEY ? new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 }) : null;
 
-const schemaJson = zodToJsonSchema(SynthSpecSchema, "SynthSpec");
+const schemaJson = zodToJsonSchema(SynthSpecSchema as any, "SynthSpec");
 
 const SYSTEM_PROMPT = `
 You are an expert audio DSP engineer and synthesizer patch designer.

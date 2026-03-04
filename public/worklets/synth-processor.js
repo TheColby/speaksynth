@@ -1,4 +1,7 @@
+// Copyright (c) 2026 Colby Leider and contributors. All rights reserved.
+// Licensed under the MIT License. See LICENSE for details.
 // Custom AudioWorkletProcessor for SpeakSynth
+
 
 const TWO_PI = 2 * Math.PI;
 
