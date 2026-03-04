@@ -1,6 +1,6 @@
 # 🎙️ SpeakSynth
 
-> **Speak a sound. Hear it in seconds.**
+**Speak a sound. Hear it in seconds.**
 
 SpeakSynth is an open-source, browser-based **wavetable synthesizer** powered by speech and AI. Describe any sound in plain English — *"warm analog pad"*, *"gritty reese bass"*, *"glassy FM shimmer"* — and receive a fully-realized synthesizer patch playing back in your browser in approximately 2 seconds, with no knobs to turn and no DAW required.
 
