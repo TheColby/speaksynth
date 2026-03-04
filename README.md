@@ -12,19 +12,7 @@ Under the hood, SpeakSynth combines a Whisper-powered transcription endpoint, a 
 
 Wavetable synthesis is a digital audio technique in which **a single cycle of a waveform** (called a *wavetable*) is stored in memory and then played back in a loop at varying speeds to produce different pitches. Unlike subtractive synthesis — which starts with a spectrally rich waveform and filters it — wavetable synthesis can produce any timbre by crafting the shape of the wave itself.
 
-The core concept:
-
-```
-┌─────────────────────────────────────┐
-│   Wavetable (one cycle, e.g. 2048   │
-│   samples): a single period of      │
-│   a waveform stored as a lookup     │
-│   table.                            │
-└────────────────────────┬────────────┘
-                         │  Read at varying speeds
-                         ▼
-                   pitch = f(readback rate)
-```
+A single cycle of a waveform is stored as a lookup table and played back in a loop — the playback speed determines pitch, and the shape of the waveform determines timbre.
 
 A **wavetable bank** extends this: multiple single-cycle waveforms are arranged in a sequence, and the synthesis engine can *morph* between them continuously, creating evolving, animated timbres. This morphing is what gives wavetable synths their characteristic "moving" quality.
 
