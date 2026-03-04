@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎙️ SpeakSynth
 
-## Getting Started
+> **Speak a sound. Hear it in seconds.**
 
-First, run the development server:
+SpeakSynth is an open-source, browser-based synthesizer powered by speech and AI. Describe any sound in plain English — a "warm analog pad", a "gritty reese bass", a "glassy shimmer" — and receive a fully-realized wavetable synthesizer patch playing back in ~2 seconds. No knob-turning required.
+
+---
+
+## ✨ How It Works
+
+```
+🎤 Speak  →  📝 Transcribe (Whisper)  →  🤖 LLM Patch Generation  →  🔊 WebAudio Playback
+```
+
+1. **Speak** your sound description into the microphone
+2. **Transcribe** — audio is sent to Whisper for fast, accurate transcription
+3. **Generate** — an LLM converts the text into a structured `SynthSpec` (validated with Zod)
+4. **Synthesize** — the spec is rendered into a wavetable bank via deterministic DSP algorithms
+5. **Play** — an AudioWorklet-powered engine plays back your sound instantly in the browser
+
+---
+
+## 🏗️ Tech Stack
+
+| Layer | Tech |
+|---|---|
+| Framework | [Next.js 16](https://nextjs.org) + [TypeScript](https://typescriptlang.org) |
+| Styling | [Tailwind CSS v4](https://tailwindcss.com) |
+| Speech-to-Text | [Whisper / faster-whisper](https://github.com/openai/whisper) or OpenAI API |
+| LLM | [OpenAI GPT-4o](https://platform.openai.com) |
+| Schema Validation | [Zod](https://zod.dev) |
+| Audio Engine | [WebAudio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API) + [AudioWorklet](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet) |
+| Testing | [Vitest](https://vitest.dev) |
+
+---
+
+## 🚀 Quick Start
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/TheColby/speaksynth.git
+cd speaksynth
+npm install
+```
+
+### 2. Configure environment
+
+```bash
+cp .env.example .env.local
+```
+
+Add your API key:
+
+```env
+OPENAI_API_KEY=sk-...
+```
+
+> **No API key?** The app falls back to a built-in mock patch so you can still explore the UI and DSP engine.
+
+### 3. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧪 Testing
 
-## Learn More
+```bash
+npm test
+```
 
-To learn more about Next.js, take a look at the following resources:
+Unit tests cover the core DSP algorithms (wavetable generation, normalization, DC removal) using Vitest.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Project Structure
 
-## Deploy on Vercel
+```
+/app
+  /api/generate      → LLM patch generation endpoint (POST)
+  /api/transcribe    → Whisper transcription endpoint (POST)
+/audio
+  SynthEngine.ts     → WebAudio graph: oscillator, filter, FX, ADSR
+/components
+  MicInput.tsx       → Microphone capture and waveform display
+  SynthPanel.tsx     → Patch parameter visualization
+  Keyboard.tsx       → On-screen MIDI keyboard
+/dsp
+  wavetable_generator.ts  → Deterministic DSP: additive, formant, waveshaper, PWM families
+/public/worklets
+  synth-processor.js → AudioWorklet DSP thread
+/schemas
+  synthSpec.ts       → Zod schema for the SynthSpec JSON contract
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎛️ SynthSpec Schema
+
+The LLM outputs a structured JSON `SynthSpec` validated against a Zod schema:
+
+```ts
+{
+  wavetables: { count, tableSize, family, brightness, inharmonicity },
+  voice:      { polyphony, unison, detuneCents, stereoSpread },
+  ampEnv:     { attack, decay, sustain, release },
+  filter:     { type, cutoffHz, resonance, envAmount },
+  fx:         { chorus, reverb },
+  demo:       { type, notes, lengthSec }
+}
+```
+
+Wavetable families: `additive` · `formant` · `waveshaper` · `pwm`
+
+---
+
+## 🤝 Contributing
+
+PRs welcome. Open an issue first for major changes.
+
+---
+
+## 📄 License
+
+MIT
