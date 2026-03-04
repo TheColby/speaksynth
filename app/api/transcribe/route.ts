@@ -17,14 +17,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
         }
 
-        // Mock response if no OpenAI key
+        // No API key — tell the client rather than returning a fake transcription
         if (!openai) {
-            console.log("No OPENAI_API_KEY found. Mocking transcription.");
-            // Simulate delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return NextResponse.json({
-                text: "Make a warm glassy ambient pad with a slow attack and subtle chorus."
-            });
+            return NextResponse.json({ text: '', noKey: true });
         }
 
         // OpenAI Whisper implementation

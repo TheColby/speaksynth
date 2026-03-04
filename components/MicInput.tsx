@@ -128,7 +128,10 @@ export default function MicInput({ onTranscription, isProcessing, setIsProcessin
                 body: formData,
             });
             const data = await res.json();
-            if (data.text) {
+            if (data.noKey) {
+                setMicError('Voice input requires OPENAI_API_KEY. Type your description below and hit Generate.');
+                setIsProcessing(false);
+            } else if (data.text) {
                 onTranscription(data.text);
             } else {
                 setMicError('Transcription failed: ' + (data.error ?? 'unknown error'));
