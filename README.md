@@ -121,6 +121,7 @@ Traditional wavetable synthesizers require expert knowledge: you must know what 
 3. **GPT-4o** interprets your description and maps it onto a validated `SynthSpec` — a structured JSON object containing wavetable parameters, voice configuration, ADSR envelope, filter settings, and FX amounts
 4. **Deterministic DSP** renders a wavetable bank for the chosen family
 5. **A polyphonic AudioWorklet** synthesizes audio in real time, directly in your browser — no plugins, no install, no DAW
+6. **Play it immediately** — via the on-screen keyboard, your computer keyboard (A–K mapped to a chromatic octave), or any connected **MIDI keyboard** through the [Web MIDI API](https://developer.mozilla.org/en-US/docs/Web/API/Web_MIDI_API). Plug in a controller and your generated patch responds to real hardware in real time, directly in the browser.
 
 ---
 
