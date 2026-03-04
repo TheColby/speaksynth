@@ -108,7 +108,7 @@ export default function Home() {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 flex flex-col items-center gap-6 px-6 py-10 max-w-3xl mx-auto w-full">
+      <main className="flex-1 flex flex-col items-center gap-6 px-6 py-10 max-w-6xl mx-auto w-full">
         {/* Mic + Transcript */}
         <div className="flex flex-col sm:flex-row gap-4 w-full items-start justify-center">
           <MicInput

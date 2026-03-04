@@ -82,7 +82,7 @@ export default function Keyboard({ hasPatch, engineReady }: KeyboardProps) {
     const isDisabled = !hasPatch || !engineReady;
 
     return (
-        <div className="w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl flex flex-col items-center gap-3">
+        <div className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl flex flex-col items-center gap-3">
             {isDisabled && (
                 <p className="text-xs text-zinc-500">
                     {!engineReady ? 'Click anywhere to enable audio, then generate a patch to play' : 'Generate a patch to enable the keyboard'}
