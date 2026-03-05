@@ -172,7 +172,7 @@ function pickMockPreset(text: string): SynthSpec {
 
 export async function POST(req: Request) {
     try {
-        const { text } = await req.json();
+        const { text, contextSpec } = await req.json();
 
         if (!text || typeof text !== 'string') {
             return NextResponse.json({ error: 'Missing or invalid "text" in request body' }, { status: 400 });
@@ -184,12 +184,22 @@ export async function POST(req: Request) {
             return NextResponse.json(pickMockPreset(text));
         }
 
+        const messages: any[] = [
+            { role: "system", content: SYSTEM_PROMPT }
+        ];
+
+        if (contextSpec) {
+            messages.push({
+                role: "system",
+                content: `The user currently has this patch loaded:\n${JSON.stringify(contextSpec, null, 2)}\n\nApply their requested changes as a modification to this existing patch instead of starting from scratch. Keep parameters they don't mention relatively similar.`
+            });
+        }
+
+        messages.push({ role: "user", content: `Generate a synth patch for this description: "${text}"` });
+
         const completion = await openai.chat.completions.create({
             model: "gpt-4o",
-            messages: [
-                { role: "system", content: SYSTEM_PROMPT },
-                { role: "user", content: `Generate a synth patch for this description: "${text}"` }
-            ],
+            messages,
             response_format: { type: "json_object" }
         });
 

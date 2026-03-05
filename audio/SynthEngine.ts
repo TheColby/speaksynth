@@ -6,6 +6,7 @@ import { SynthSpec } from '@/schemas/synthSpec';
 export class SynthEngine {
     context: AudioContext | OfflineAudioContext | null = null;
     workletNode: AudioWorkletNode | null = null;
+    analyserNode: AnalyserNode | null = null;
     initialized = false;
     spec: SynthSpec | null = null;
 
@@ -26,7 +27,15 @@ export class SynthEngine {
                 outputChannelCount: [2]
             });
 
-            this.workletNode.connect(this.context.destination);
+            if (!(this.context instanceof OfflineAudioContext)) {
+                this.analyserNode = this.context.createAnalyser();
+                this.analyserNode.fftSize = 2048;
+                this.workletNode.connect(this.analyserNode);
+                this.analyserNode.connect(this.context.destination);
+            } else {
+                this.workletNode.connect(this.context.destination);
+            }
+
             this.initialized = true;
         } catch (e) {
             console.error("Failed to load AudioWorklet", e);
@@ -39,7 +48,7 @@ export class SynthEngine {
         }
     }
 
-    loadSpec(spec: SynthSpec, tables: Float32Array[]) {
+    loadSpec(spec: SynthSpec, tables: Float64Array[]) {
         this.spec = spec;
         if (this.workletNode) {
             this.workletNode.port.postMessage({
@@ -107,7 +116,7 @@ export class SynthEngine {
         return 440 * Math.pow(2, (midi - 69) / 12);
     }
 
-    async renderDemoWav(spec: SynthSpec, tables: Float32Array[]): Promise<Blob | null> {
+    async renderDemoWav(spec: SynthSpec, tables: Float64Array[]): Promise<Blob | null> {
         const offlineEngine = new SynthEngine();
         await offlineEngine.init(spec.demo.lengthSec + spec.ampEnv.release + 1); // add trailing tail
         if (!offlineEngine.initialized || !(offlineEngine.context instanceof OfflineAudioContext)) return null;

@@ -8,6 +8,7 @@ import MicInput from '@/components/MicInput';
 import TranscriptEntry from '@/components/TranscriptEntry';
 import SynthPanel from '@/components/SynthPanel';
 import Keyboard from '@/components/Keyboard';
+import Visualizer from '@/components/Visualizer';
 import { SynthSpec } from '@/schemas/synthSpec';
 import { engine } from '@/audio/SynthEngine';
 import { generateWavetables } from '@/dsp/wavetable_generator';
@@ -61,7 +62,7 @@ export default function Home() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, contextSpec: currentSpec }),
       });
 
       if (!res.ok) throw new Error(`Generation failed: ${res.status}`);
@@ -132,6 +133,11 @@ export default function Home() {
             {statusMessage}
           </div>
         )}
+
+        {/* Visualizer */}
+        <div className="w-full">
+          <Visualizer engineReady={engineReady} />
+        </div>
 
         {/* Synth macros */}
         <SynthPanel hasPatch={!!currentSpec} />

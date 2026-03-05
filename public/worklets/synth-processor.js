@@ -41,7 +41,7 @@ class Voice {
         this.unisonCount = spec.voice.unison;
         this.detuneRatios = [];
         this.panMatrix = [];
-        this.phase = new Float32Array(this.unisonCount);
+        this.phase = new Float64Array(this.unisonCount);
 
         const spread = spec.voice.stereoSpread;
         const detuneCents = spec.voice.detuneCents;
