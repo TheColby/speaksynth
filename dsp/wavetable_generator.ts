@@ -8,7 +8,7 @@ const TWO_PI = 2 * Math.PI;
 /**
  * Normalizes a wavetable to lay between -1 and 1, and removes DC offset.
  */
-function normalizeAndRemoveDC(table: Float64Array): void {
+function normalizeAndRemoveDC(table: Float32Array): void {
     let sum = 0;
     for (let i = 0; i < table.length; i++) {
         sum += table[i];
@@ -33,10 +33,10 @@ function normalizeAndRemoveDC(table: Float64Array): void {
 /**
  * Generate a deterministic morphing wavetable bank based on SynthSpec parameters.
  */
-export function generateWavetables(spec: SynthSpec): Float64Array[] {
+export function generateWavetables(spec: SynthSpec): Float32Array[] {
     const { count, tableSize, family, brightness, inharmonicity } = spec.wavetables;
 
-    const tables: Float64Array[] = [];
+    const tables: Float32Array[] = [];
 
     // Base configuration
     const nyquistHarmonics = Math.floor(tableSize / 2) - 1; // Bandlimited to avoid aliasing up to Nyquist
@@ -44,7 +44,7 @@ export function generateWavetables(spec: SynthSpec): Float64Array[] {
 
     for (let t = 0; t < count; t++) {
         const morphAmt = count > 1 ? t / (count - 1) : 0; // 0.0 to 1.0 across tables
-        const table = new Float64Array(tableSize);
+        const table = new Float32Array(tableSize);
 
         // Additive Family: Harmonic series with spectral tilt that changes across tables
         if (family === 'additive') {

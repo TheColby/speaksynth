@@ -48,7 +48,7 @@ export class SynthEngine {
         }
     }
 
-    loadSpec(spec: SynthSpec, tables: Float64Array[]) {
+    loadSpec(spec: SynthSpec, tables: Float32Array[]) {
         this.spec = spec;
         if (this.workletNode) {
             this.workletNode.port.postMessage({
@@ -116,7 +116,7 @@ export class SynthEngine {
         return 440 * Math.pow(2, (midi - 69) / 12);
     }
 
-    async renderDemoWav(spec: SynthSpec, tables: Float64Array[]): Promise<Blob | null> {
+    async renderDemoWav(spec: SynthSpec, tables: Float32Array[]): Promise<Blob | null> {
         const offlineEngine = new SynthEngine();
         await offlineEngine.init(spec.demo.lengthSec + spec.ampEnv.release + 1); // add trailing tail
         if (!offlineEngine.initialized || !(offlineEngine.context instanceof OfflineAudioContext)) return null;

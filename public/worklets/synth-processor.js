@@ -41,7 +41,7 @@ class Voice {
         this.unisonCount = spec.voice.unison;
         this.detuneRatios = [];
         this.panMatrix = [];
-        this.phase = new Float64Array(this.unisonCount);
+        this.phase = new Float32Array(this.unisonCount);
 
         const spread = spec.voice.stereoSpread;
         const detuneCents = spec.voice.detuneCents;
@@ -256,8 +256,7 @@ class SynthProcessor extends AudioWorkletProcessor {
             const msg = e.data;
             if (msg.type === 'SET_SPEC') {
                 this.spec = msg.spec;
-                // Ensure arrays received over postMessage are explicitly typed as Float64Array
-                this.tables = msg.tables.map(t => new Float64Array(t));
+                this.tables = msg.tables;
             } else if (msg.type === 'NOTE_ON') {
                 // Find free voice
                 let voice = this.voices.find(v => !v.active);
