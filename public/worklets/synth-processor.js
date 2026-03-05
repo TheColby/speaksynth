@@ -256,7 +256,8 @@ class SynthProcessor extends AudioWorkletProcessor {
             const msg = e.data;
             if (msg.type === 'SET_SPEC') {
                 this.spec = msg.spec;
-                this.tables = msg.tables;
+                // Ensure arrays received over postMessage are explicitly typed as Float64Array
+                this.tables = msg.tables.map(t => new Float64Array(t));
             } else if (msg.type === 'NOTE_ON') {
                 // Find free voice
                 let voice = this.voices.find(v => !v.active);
