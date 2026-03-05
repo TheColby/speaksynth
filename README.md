@@ -46,7 +46,7 @@ SpeakSynth implements four wavetable **families** generated algorithmically from
 The modern concept of wavetable synthesis was **invented by Wolfgang Palm** and commercialized through his company **PPG (Palm Products GmbH)**. The [PPG Wave 2.2](https://en.wikipedia.org/wiki/PPG_Wave) (1982) was the first commercially successful wavetable synthesizer. It used 8-bit wavetables and allowed users to step through discrete waveforms, producing the icy, glassy character that defined early 1980s electronic and pop music.
 
 > *"The PPG Wave had a crystal-clear, brittle quality nobody had heard before. It sounded almost like digital glass."*  
-> — Many producers of the era
+> — <COLBY: find citation>
 
 Notable users of the PPG Wave: **Tangerine Dream**, **Klaus Schulze**, **Duran Duran**, **Kate Bush**, **Howard Jones**.
 
@@ -73,6 +73,8 @@ References:
 ---
 
 ### Korg Wavestation (1990): Vector Synthesis
+
+<@WillPirkle: need your help bro>
 
 Korg's [Wavestation](https://en.wikipedia.org/wiki/Korg_Wavestation) introduced **vector synthesis** — moving between multiple wavetables in 2D space using a joystick. Derived from the Sequential Circuits Prophet-VS (1986), it produced shimmering, evolving pads that no other instrument could replicate.
 
