@@ -4,6 +4,8 @@
 
 SpeakSynth is an open-source, browser-based **wavetable synthesizer** powered by speech and AI. Describe any sound in plain English — *"warm analog pad"*, *"gritty whack bass"*, *"glassy FM shimmer"*, *"make an ethereal percussive pitched bongo with reverse reverb gating that morphs calmly within 200 msec into a warbly FM decay with a long tail"* — and receive a fully-realized synthesizer patch playing back in your browser in approximately 2 seconds, with no knobs to turn (unless u want them) and no DAW required.
 
+Nerd Alert:
+
 Under the hood, SpeakSynth combines a Whisper-powered transcription endpoint, a GPT-4o LLM that interprets your description into a structured `SynthSpec` JSON schema, a deterministic DSP wavetable bank generator, and a polyphonic `AudioWorklet` synthesis engine — all running in a Next.js web application.
 
 ---
